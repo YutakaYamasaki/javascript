@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+<div id="app">
+    <ul>
+        <li v-for="item in items" v-bind:key="item.name">
+            {{ item.name }}の個数: <input type="number" v-model="item.quantity" min="0">
+        </li>
+    </ul>
+    <hr>
+    <div v-bind:style="errorMessageStyle">
+        <ul>
+            <li v-for="item in items" v-bind:key="item.name">
+                {{ item.name }}: {{ item.price }} x {{ item.quantity }} = {{ item.price * item.quantity |
+                numberWithDelimiter }}pesos
+            </li>
+        </ul>
+        <p>{{ items[0].name }}: {{ items[0].price }} x {{ items[0].quantity }}</p>
+        <p>{{ items[1].name }}: {{ items[1].price }} x {{ items[1].quantity }}</p>
+        <p>{{ items[2].name }}: {{ items[2].price }} x {{ items[2].quantity }}</p>
+
+        
+
+
+        <p>小計: {{ totalPrice | numberWithDelimiter }}pesos</p>
+        <p>{{ delivery.name }}: {{ delivery.price }}</p>
+        <p>合計(税込): {{ totalPriceWithTax | numberWithDelimiter }}pesos</p>
+        <p v-show="!canBuy">
+            {{ 1000 | numberWithDelimiter }}pesos以上からご購入いただけます
+        </p>
+        <!-- ボタンが押されたら、メソッドを呼び出す -->
+        <button v-bind:disabled="!canBuy" v-on:click="doBuy">購入</button>
+        <button v-on:click="doReset">Reset</button>
+
+    </div>
+</div>
+<script>
+    console.assert(typeof Vue !== 'undefined');
+    var items = [ {
+            name: 'ピザ', 
+            price: 300, 
+            quantity: 0
+        }, 
+        {
+            name: 'ポテト',
+            price: 150,
+            quantity: 0
+        },
+        {
+            name: 'コーラ', 
+            price: 100,
+            quantity: 0
+        },
+        
+    ]
+    var delivery = {
+        name : 'デリバリー',
+        price : 50
+    }
+
+    var app = new Vue({
+        el: '#app',
+        data: {
+        message: 'こんにちは!',
+        delivery: delivery,
+        items : items
+        },
+        filters : {
+            numberWithDelimiter : (value) => {
+                if(!value){
+                    return '0'
+                }
+                return value.toString().replace(/(\d)(?=(\d{3})+$)/g, '$1,')
+            }
+        },
+        methods: {
+            doBuy: function () {
+            // 本来はここで、サーバーと通信を行う 
+            alert('お買い上げあがとうございあます！!') 
+                this.items.forEach(function (item) {
+                item.quantity = 0
+        })
+        },
+            doReset: function() {
+            alert('Resetしました。')
+                this.items.forEach(function (item){
+                item.quantity = 0
+                })
+            }
+         },
+        computed: {
+            totalPrice: () => {
+                // this経由でインスタンス内のデータにアクセス
+                return this.items.reduce((sum, item) => {
+                    return sum + (item.price * item.quantity)
+                }, 0)
+            },
+            totalPriceWithTax: function() {
+                 // 算出プロパティに依存した算出プロパティも定義できる
+                 if(this.totalPrice===0){
+                     return 0
+                 }else{
+                    return Math.floor((this.totalPrice + delivery.price ) * 1.1)
+                 }
+                 
+            },
+            canBuy: function () {
+                return this.totalPrice >= 1000
+            },
+            errorMessageStyle: function () {
+            return {
+                border: this.canBuy ? '' : '1px solid red',
+                color: this.canBuy ? '' : 'red'
+            }
+        }
+        }
+    })
+</script>
+</html>

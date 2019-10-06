@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+<div id="app">
+    <div :style="errorMessageStyle">
+        <ul>
+            <li v-for="item in items" v-bind:key="item.name">
+                {{ item.name }}の個数: <input type="number" v-model="item.quantity" min="0">
+            </li>
+        </ul>
+        <p>小計: {{ totalPrice | numberWithDelimiter }}円</p>
+        <p>合計: {{ totalPriceWithTax | numberWithDelimiter }}</p>
+        <p v-show="!canBuy">
+            {{ 1000 | numberWithDelimiter }}円以上からご購入いただけます
+        </p>
+    <button v-bind:disabled="!canBuy" v-on:click="doBuy">購入</button>
+    </div>
+
+</div>
+
+<script>
+    console.assert(typeof Vue !== 'undefined');
+    var items = [ {
+            name: 'ピザ', 
+            price: 300, 
+            quantity: 0
+        }, 
+        {
+            name: 'ポテト',
+            price: 150,
+            quantity: 0
+        },
+        {
+            name: 'コーラ', 
+            price: 100,
+            quantity: 0
+        }
+    ]
+
+    var app = new Vue({
+        el: '#app',
+        data: {
+        message: 'こんにちは!',
+        items : items
+        },
+        filters : {
+            numberWithDelimiter : (value) => {
+                if(!value){
+                    return '0'
+                }
+                return value.toString().replace(/(\d)(?=(\d{3})+$)/g, '$1,')
+            }
+        },
+        methods: {
+            doBuy: function () {
+            // 本来はここで、サーバーと通信を行う 
+            alert('お買い上げありがとうございます!') 
+                this.items.forEach(function (item) {
+                item.quantity = 0
+        })
+        } },
+        computed: {
+            totalPrice: () => {
+                // this経由でインスタンス内のデータにアクセス
+                return this.items.reduce((sum, item) => {
+                    return sum + (item.price * item.quantity)
+                }, 0)
+            },
+            totalPriceWithTax: function () {
+            return Math.floor(this.totalPrice * 1.1)
+            },
+            canBuy: function () {
+                return this.totalPrice >= 1000
+            },
+            errorMessageStyle: function () {
+            return {
+                border: this.canBuy ? '' : '1px solid red',
+                color: this.canBuy ? '' : 'red'
+            }
+        }
+        }
+    })
+</script>
+</html>
